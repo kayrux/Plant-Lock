@@ -1,1 +1,29 @@
-/* global styles */
+body, html {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f4f4f4;
+}
+
+.building {
+    width: 375px;
+    height: 667px;
+    overflow: hidden;
+    position: relative;
+    background-color: #e0e0e0;
+    border: 3px solid #000;
+}
+
+.character {
+    width: 50px;
+    height: 50px;
+    background-color: #ff4500;
+    position: absolute;
+    bottom: 0; 
+    left: 50%;
+    transform: translateX(-50%);
+}
