@@ -12,7 +12,7 @@ let awaitingStartCmd = true;
 let phoneFlipped = false;
 let initialized = false;
 
-const CORRECT_SEQUENCE = ["right", "left", "right", "left"];
+const CORRECT_SEQUENCE = ["right", "left", "right", "right"];
 let currentSequence = [];
 
 // location: [position, row]
@@ -39,6 +39,25 @@ function reset() {
   initialized = false;
   awaitingStartCmd = true;
   log.innerHTML = "Tilt phone towards you to start";
+  fishesContainer.innerHTML = "";
+  currentSequence = [];
+  canMove = true;
+  currentCharacterLocation = ["middle", 0];
+  character.style.bottom = initialCharacterBottom + "%";
+  character.style.left = "50%";
+  // initialize();
+
+  // Give user a chance to see the sequence they entered before ignoreSensorEvents
+  setTimeout(() => {
+    sequence.innerHTML = "";
+    ignoreSensorEvents = false;
+  }, 1000);
+}
+
+function tryagain() {
+  initialized = false;
+  awaitingStartCmd = true;
+  log.innerHTML = "Incorrect password. Tilt phone towards you to try again";
   fishesContainer.innerHTML = "";
   currentSequence = [];
   canMove = true;
@@ -117,7 +136,7 @@ function checkPasscode() {
     unlock();
   } else {
     log.innerHTML = "Incorrect passcode";
-    reset();
+    tryagain();
   }
 }
 
