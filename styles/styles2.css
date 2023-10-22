@@ -1,0 +1,148 @@
+.root {
+  --character-bottom: 5%;
+  --row-offset: 20%;
+}
+
+body, html {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /*background-color: #f4f4f4;*/
+  background-image: url('water.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* Optional, for a fixed background */
+  /* Increase the z-index to ensure it's on top of other elements */
+  z-index: -1;
+}
+
+.orientation {
+  position: absolute;
+  bottom: 5%;
+  left: 80%;
+}
+
+#gamma {
+  color: white;
+  font-weight: bold;
+}
+
+.building {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background-color: transparent;
+  border: 3px solid #000;
+  z-index: 1;
+}
+
+#character {
+  height: 80px;
+  width: 30px;
+  bottom: 5%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-image: url('boat.png'); /* Set the path to your fish image */
+  background-position: center;
+  position: absolute;
+  animation: bob 2s ease-in-out infinite; /* Adjust the duration and timing function as needed */
+  transition: bottom 1s ease-in-out, left 1s ease-in-out; /* Adjust the duration and easing as needed */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#log {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+#fishes-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.fish {
+  width: 70px;
+  height: 60px;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.dory {
+  background-image: url('dory.gif'); /* Set the path to your fish image */
+  animation: swim 2s ease-in-out infinite; /* Apply the swim animation */
+}
+
+.nemo {
+  background-image: url('nemo.gif'); /* Set the path to your fish image */
+  animation: swim 3s ease-in-out infinite; /* Apply the swim animation */
+}
+
+.left-fish {
+  left: 10%;
+}
+
+.right-fish {
+  left: 80%;
+}
+
+.fish-row {
+  width: 90vw;
+  position: absolute;
+  display: flex;
+  justify-content: space-between;
+}
+
+#row-1 {
+  bottom: 25%;
+}
+#row-2 {
+  bottom: 45%;
+}
+#row-3 {
+  bottom: 65%;
+}
+#row-4 {
+  bottom: 85%;
+}
+
+
+@keyframes swim {
+  0% {
+      transform: translateY(0);
+  }
+  50% {
+      transform: translateY(-30px); /* Adjust this value to control the swim motion */
+  }
+  100% {
+      transform: translateY(0);
+  }
+}
+
+@keyframes swim2 {
+  0% {
+      transform: translateY(0);
+  }
+  50% {
+      transform: translateY(-20px); /* Adjust this value to control the swim motion */
+  }
+  100% {
+      transform: translateY(0);
+  }
+}
+@keyframes bob {
+  0%, 100% {
+    transform: translateY(0) translateX(-50%) rotate(180deg);
+  }
+  50% {
+    transform: translateY(-10px) translateX(-50%) rotate(180deg); /* Adjust the bobbing height */
+  }
+}
