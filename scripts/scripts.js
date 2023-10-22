@@ -8,6 +8,9 @@ const numRows = 4;
 let canMove = true;
 let unlocked = false;
 let ignoreSensorEvents = false;
+let awaitingStartCmd = true;
+let phoneFlipped = false;
+let initialized = false;
 
 const CORRECT_SEQUENCE = ["right", "left", "right", "left"];
 let currentSequence = [];
@@ -17,9 +20,11 @@ let currentCharacterLocation = ["middle", 0];
 const audio = document.getElementById("background-audio");
 const gammaElement = document.getElementById("gamma");
 
-initialize();
+log.innerHTML = "Tilt phone towards you to start";
 
 function initialize() {
+  initialized = true;
+  log.innerHTML = "Tilt left or right";
   for (let i = 4; i >= 1; i--) {
     console.log(i);
     const row = document.createElement("div");
@@ -31,13 +36,16 @@ function initialize() {
 }
 
 function reset() {
+  initialized = false;
+  awaitingStartCmd = true;
+  log.innerHTML = "Tilt phone towards you to start";
   fishesContainer.innerHTML = "";
   currentSequence = [];
   canMove = true;
   currentCharacterLocation = ["middle", 0];
   character.style.bottom = initialCharacterBottom + "%";
   character.style.left = "50%";
-  initialize();
+  // initialize();
 
   // Give user a chance to see the sequence they entered before ignoreSensorEvents
   setTimeout(() => {
@@ -149,10 +157,17 @@ function removeFish() {
 window.addEventListener("deviceorientation", function (event) {
   if (unlocked || ignoreSensorEvents) return;
   audio.play();
-
-  gammaElement.innerHTML = event.gamma;
+  gammaElement.innerHTML = event.beta + "<br/>" + event.gamma;
   let gamma = event.gamma;
   let beta = event.beta;
+
+  if (beta >= 100 && awaitingStartCmd && !initialized) {
+    initialize();
+    this.setTimeout(() => {
+      awaitingStartCmd = false;
+    }, 1000);
+  }
+  if (awaitingStartCmd == true) return;
 
   if (gamma > 20) {
     moveCharacter("right");
