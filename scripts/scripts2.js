@@ -8,9 +8,10 @@ let canMove = true;
 
 // location: [position, row]
 currentCharacterLocation = ["middle", 0];
+const audio = document.getElementById("background-audio");
+const gammaElement = document.getElementById("gamma");
 
 initialize();
-const gammaElement = document.getElementById("gamma");
 
 function initialize() {
   for (let i = 4; i >= 1; i--) {
@@ -21,10 +22,6 @@ function initialize() {
     addFishToRow(row, i);
     fishesContainer.appendChild(row);
   }
-
-  // setInterval(() => {
-  //   moveCharacter("right");
-  // }, 1000);
 }
 
 function addFishToRow(rowElement, rowIndex) {
@@ -80,7 +77,8 @@ function removeFish() {
 }
 
 window.addEventListener("deviceorientation", function (event) {
-  console.log(event);
+  audio.play();
+
   gammaElement.innerHTML = event.gamma;
   let gamma = event.gamma;
   let beta = event.beta;
