@@ -1,187 +1,162 @@
-let character = document.querySelector('.character');
-let building = document.querySelector('.building');
-let step = character.offsetWidth;
-//let step = '20%';
+const character = document.getElementById("character");
+const fishesContainer = document.getElementById("fishes-container");
+const sequence = document.getElementById("sequence");
+const bottomOffsetPerLevel = 20;
+const initialCharacterBottom = 5;
+const log = document.getElementById("log");
+const numRows = 4;
+let canMove = true;
+let unlocked = false;
+let ignoreSensorEvents = false;
 
+const CORRECT_SEQUENCE = ["right", "left", "right", "left"];
+let currentSequence = [];
 
-let notification = document.getElementById('notification');
+// location: [position, row]
+let currentCharacterLocation = ["middle", 0];
+const audio = document.getElementById("background-audio");
+const gammaElement = document.getElementById("gamma");
 
-let lastMoveTime = 0;
-let recentMovements = [];
-const CORRECT_SEQUENCE = ['right', 'left', 'right', 'left'];
-const MOVE_COOLDOWN = 1000;
-let phoneFlipped = false;
+initialize();
 
-// Insert your new code here
-let currentLevel = 0; // Starting level
-let maxLevel = 3; // Maximum level (0, 1, 2, 3)
-
-// Map levels to y-coordinates
-let levelToYCoordinate = {
-    0:5,
-    1: 30,
-    2: 50,
-    3: 70,
-    4: 90
-};
-let xCoordinate = '40%'; // Initial x-coordinate
-const audio = document.getElementById('background-audio');
-
-
-function checkUnlockSequence() {
-    if (recentMovements.length !== CORRECT_SEQUENCE.length) return false;
-
-    for (let i = 0; i < CORRECT_SEQUENCE.length; i++) {
-        if (recentMovements[i] !== CORRECT_SEQUENCE[i]) {
-            return false;
-        }
-    }
-    return true;
+function initialize() {
+  for (let i = 4; i >= 1; i--) {
+    console.log(i);
+    const row = document.createElement("div");
+    row.classList.add("fish-row");
+    row.id = "row-" + i;
+    addFishToRow(row, i);
+    fishesContainer.appendChild(row);
+  }
 }
 
-function showNotification(message) {
-    notification.textContent = message;
-    notification.style.display = 'block';
-    setTimeout(() => {
-        notification.style.display = 'none';
-    }, 2000);
+function reset() {
+  fishesContainer.innerHTML = "";
+  currentSequence = [];
+  canMove = true;
+  currentCharacterLocation = ["middle", 0];
+  character.style.bottom = initialCharacterBottom + "%";
+  character.style.left = "50%";
+  initialize();
+
+  // Give user a chance to see the sequence they entered before ignoreSensorEvents
+  setTimeout(() => {
+    sequence.innerHTML = "";
+    ignoreSensorEvents = false;
+  }, 1000);
 }
 
+function addFishToRow(rowElement, rowIndex) {
+  const leftFish = document.createElement("div");
+  leftFish.id = "fish-" + 2 * rowIndex;
+  leftFish.classList.add("fish", "left-fish", "nemo");
+  console.log("Adding " + leftFish.id);
 
-function fishRemove(){
-         
-    // Check if the character is over a fish
-    const characterRect = character.getBoundingClientRect();
-    const fishElements = document.querySelectorAll('.fish');
+  const rightFish = document.createElement("div");
+  rightFish.id = "fish-" + (2 * rowIndex - 1);
+  rightFish.classList.add("fish", "right-fish", "dory");
+  console.log("Adding " + rightFish.id);
 
-    fishElements.forEach((fish) => {
-        const fishRect = fish.getBoundingClientRect();
-
-        // Check for collision between character and fish
-        if (
-            characterRect.left < fishRect.right &&
-            characterRect.right > fishRect.left &&
-            characterRect.top < fishRect.bottom &&
-            characterRect.bottom > fishRect.top
-        ) {
-            // Character and fish are colliding, remove the fish
-            fish.style.display = 'none';
-        }
-    });
-    //end code
+  rowElement.appendChild(leftFish);
+  rowElement.appendChild(rightFish);
 }
+
 function moveCharacter(direction) {
-    let characterLeft = character.offsetLeft;
-    let characterTop = character.offsetTop;
-    let buildingWidth = building.offsetWidth;
-    let buildingHeight = building.offsetHeight;
+  log.innerHTML = "";
 
-    let currentTime = new Date().getTime();
+  if (!canMove) return;
 
-    if (currentTime - lastMoveTime < MOVE_COOLDOWN) {
-        return; // Exit the function if not enough time has passed
+  let bottomOffset =
+    (currentCharacterLocation[1] + 1) * bottomOffsetPerLevel +
+    initialCharacterBottom +
+    "%";
+  character.style.bottom = bottomOffset;
+  if (direction == "left") {
+    character.style.left = "10%";
+    currentCharacterLocation[0] = "left";
+    currentSequence.push("left");
+  } else {
+    character.style.left = "85%";
+    currentCharacterLocation[0] = "right";
+    currentSequence.push("right");
+  }
+
+  currentCharacterLocation[1] += 1;
+
+  // Prevent movement for a period of time
+  canMove = false;
+  setTimeout(() => {
+    removeFish(direction);
+    canMove = true;
+    if (currentCharacterLocation[1] == 4) {
+      setTimeout(() => {
+        checkPasscode();
+      }, 500);
     }
-
-    if (direction === 'right') {
-        console.log("Moving right");
-        if (characterLeft < buildingWidth - character.offsetWidth && characterTop < buildingHeight - character.offsetHeight) {
-            character.style.left = '60%';
-            if (characterTop < buildingHeight - character.offsetHeight - step) {
-                fishRemove();
-
-                currentLevel+=1;
-                character.style.top = levelToYCoordinate[currentLevel ] + '%';
-                
-            }
-        } else if (characterLeft >= buildingWidth - character.offsetWidth) {
-            console.log("Right edge reached");
-            showNotification("Cannot move further to the right!");
-        }
-    } else if (direction === 'left') {
-        console.log("Moving left");
-        if (characterLeft > step && characterTop < buildingHeight - character.offsetHeight) {
-            character.style.left = '30%';
-            if (characterTop < buildingHeight - character.offsetHeight - step) {
-                fishRemove();
-
-                currentLevel+=1;
-                character.style.top = levelToYCoordinate[currentLevel ] + '%' ;
-
-            }
-        } else if (characterLeft <= step) {
-            console.log("Left edge reached");
-            showNotification("Cannot move further to the left!");
-        }
-    }
-    recentMovements.push(direction);
-    console.log('recent Movements:', recentMovements);
-
-    lastMoveTime = currentTime;
-
-
-
+  }, 1000);
 }
 
-function resetCharacter() {
-    character.style.left = '35%';
-    character.style.top = '5%';
-    // character.style.bottom = '0';
-    recentMovements = [];
-    currentLevel = 0;
-    // Show all fish elements
-    const fishElements = document.querySelectorAll('.fish');
-    fishElements.forEach(fish => {
-        fish.style.display = 'block';
-    });
+function checkPasscode() {
+  let isCorrectPasscode = true;
+  ignoreSensorEvents = true;
+
+  for (let i = 0; i < 4; i++) {
+    if (currentSequence[i] != CORRECT_SEQUENCE[i]) {
+      isCorrectPasscode = false;
+    }
+  }
+  if (isCorrectPasscode) {
+    unlock();
+  } else {
+    log.innerHTML = "Incorrect passcode";
+    reset();
+  }
 }
 
+function unlock() {
+  setTimeout(() => {
+    log.innerHTML = "UNLOCKED";
+    fishesContainer.innerHTML = "";
+    sequence.innerHTML = "";
+    character.style.display = "none";
+    unlocked = true;
+  }, 500);
+}
 
+function removeFish() {
+  if (unlocked || ignoreSensorEvents) return;
+  let fishIndex = currentCharacterLocation[1] * 2;
 
+  if (currentCharacterLocation[0] == "right") {
+    fishIndex -= 1;
+    let miniDory = document.createElement("div");
+    miniDory.classList.add("mini-dory");
+    sequence.appendChild(miniDory);
+  } else if (currentCharacterLocation[0] == "left") {
+    let miniNemo = document.createElement("div");
+    miniNemo.classList.add("mini-nemo");
+    sequence.appendChild(miniNemo);
+  }
 
-window.addEventListener('deviceorientation', function(event) {
-    audio.play();
+  const fish = document.getElementById("fish-" + fishIndex);
+  fish.classList.add("ring");
+  setTimeout(() => {
+    fish.style.backgroundImage = "none";
+    fish.classList.remove("ring");
+  }, 500);
+}
 
-    let gamma = event.gamma;
-    let beta = event.beta;
+window.addEventListener("deviceorientation", function (event) {
+  if (unlocked || ignoreSensorEvents) return;
+  audio.play();
 
-    if (gamma > 20) {
-        moveCharacter('right');
-    } else if (gamma < -20) {
-        moveCharacter('left');
-    }
+  gammaElement.innerHTML = event.gamma;
+  let gamma = event.gamma;
+  let beta = event.beta;
 
-
-
-    // new code 
-    // Calculate the new level based on the direction
-    // let newLevel = currentLevel;
-
-    // if (direction === 'left' && currentLevel > 0) {
-    //     newLevel = currentLevel - 1;
-    //     xCoordinate = '40%'; // When tilting left, set the x-coordinate to '40%'
-    // } else if (direction === 'right' && currentLevel < maxLevel) {
-    //     newLevel = currentLevel + 1;
-    //     xCoordinate = '55%'; // When tilting right, set the x-coordinate to '45%'
-    // }
-
-    // // Call moveCharacter with the new level and x-coordinate
-    // moveCharacter(newLevel, xCoordinate);
-
-    // // Update the current level
-    // currentLevel = newLevel;
-
-        //
-    // Check for phone flip
-    if (beta > 170 || beta < -170) {
-        phoneFlipped = true;
-    } else if (phoneFlipped && (beta < 200 && beta > -200)) {
-        phoneFlipped = false;
-        if (checkUnlockSequence()) {
-            showNotification('Phone Unlocked!');
-            recentMovements = [];
-        } else {
-            showNotification('Incorrect sequence. Try again.');
-            resetCharacter();
-        }
-    }
+  if (gamma > 20) {
+    moveCharacter("right");
+  } else if (gamma < -20) {
+    moveCharacter("left");
+  }
 });
